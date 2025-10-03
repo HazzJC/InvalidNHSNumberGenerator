@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invalid NHS Number Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-lg p-8 space-y-6 bg-white rounded-xl shadow-lg">
+        <div class="text-center">
+            <h1 class="text-3xl font-bold text-gray-800">Invalid NHS Number Generator</h1>
+            <p class="mt-2 text-gray-600">For testing purposes. This tool creates 10-digit numbers that are guaranteed to fail the NHS checksum validation.</p>
+        </div>
+
+        <div class="text-center">
+            <button id="generateBtn" class="w-full px-6 py-3 text-lg font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-300">
+                Generate Number
+            </button>
+        </div>
+
+        <div id="result" class="hidden p-6 bg-gray-50 border border-gray-200 rounded-lg">
+            <h2 class="text-lg font-semibold text-gray-800">Generated Number:</h2>
+            <p id="nhsNumber" class="mt-2 text-4xl font-bold text-center text-indigo-600 bg-indigo-50 p-4 rounded-lg tracking-widest">
+                <!-- Number will appear here -->
+            </p>
+            <div class="mt-4 pt-4 border-t border-gray-200">
+                 <h3 class="text-md font-semibold text-gray-700">Reason for Invalidity:</h3>
+                 <p id="reason" class="mt-1 text-sm text-gray-600">
+                    <!-- Explanation will appear here -->
+                 </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const generateBtn = document.getElementById('generateBtn');
+        const resultDiv = document.getElementById('result');
+        const nhsNumberEl = document.getElementById('nhsNumber');
+        const reasonEl = document.getElementById('reason');
+
+        // Event listener for the button click
+        generateBtn.addEventListener('click', () => {
+            const result = generateInvalidNhsNumber();
+            nhsNumberEl.textContent = result.number.replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3'); // Format for readability
+            reasonEl.textContent = result.reason;
+            resultDiv.classList.remove('hidden');
+        });
+
+        /**
+         * Generates a 10-digit number that is guaranteed to be an invalid NHS number.
+         * @returns {object} An object containing the invalid number and the reason it's invalid.
+         */
+        function generateInvalidNhsNumber() {
+            // 1. Generate a random 9-digit prefix as a string.
+            let prefix = '';
+            for (let i = 0; i < 9; i++) {
+                prefix += Math.floor(Math.random() * 10);
+            }
+
+            // 2. Apply the NHS checksum algorithm to the first 9 digits.
+            // The weighting is (11 - position), so 10 for the first digit, 9 for the second, etc.
+            let sum = 0;
+            for (let i = 0; i < 9; i++) {
+                sum += parseInt(prefix[i], 10) * (10 - i);
+            }
+
+            const remainder = sum % 11;
+            const checkDigitCalculation = 11 - remainder;
+
+            // 3. Determine the *correct* check digit based on the calculation.
+            let correctCheckDigit;
+
+            if (checkDigitCalculation === 11) {
+                correctCheckDigit = 0;
+            } else if (checkDigitCalculation === 10) {
+                // A check digit of 10 means the number is invalid. Any prefix that
+                // results in this is an invalid prefix. We can just append a random
+                // digit and it will be guaranteed invalid.
+                const randomLastDigit = Math.floor(Math.random() * 10);
+                const invalidNumber = prefix + randomLastDigit;
+                return {
+                    number: invalidNumber,
+                    reason: `The prefix ${prefix} requires a check digit of 10, which is not allowed. Therefore, any number with this prefix is invalid.`
+                };
+            } else {
+                correctCheckDigit = checkDigitCalculation;
+            }
+
+            // 4. To guarantee invalidity, pick a check digit that is *not* the correct one.
+            // A simple way is to add 1 to the correct digit (and loop back to 0 if it was 9).
+            let incorrectCheckDigit = (correctCheckDigit + 1) % 10;
+
+            const invalidNumber = prefix + incorrectCheckDigit;
+
+            // 5. Return the invalid number and the explanation.
+            return {
+                number: invalidNumber,
+                reason: `For the prefix ${prefix}, the correct check digit should be ${correctCheckDigit}. This number was generated with the digit ${incorrectCheckDigit} to ensure it fails validation.`
+            };
+        }
+    </script>
+</body>
+</html>
