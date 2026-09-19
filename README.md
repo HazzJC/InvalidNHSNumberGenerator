@@ -1,6 +1,8 @@
 Invalid NHS Number Generator
 [➡️ Click here to use the live tool ⬅️](https://hazzjc.github.io/InvalidNHSNumberGenerator/index.html)
 
+![Invalid NHS Number Generator Screenshot](docs/screenshot.png)
+
 A simple, single-file web tool for generating 10-digit numbers that are guaranteed to fail the official NHS number checksum validation.
 
 This tool is designed for developers, testers, and anyone working with NHS systems who needs syntactically plausible but definitively invalid NHS numbers for testing purposes. Using these numbers prevents the accidental use of a real patient's identifier in a non-production environment.
